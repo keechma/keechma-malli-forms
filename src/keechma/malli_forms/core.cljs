@@ -107,7 +107,7 @@
     (get-in-errors this path default-only-dirty-paths))
   (get-in-errors [this path only-dirty-paths]
     (let [errors (get-errors this only-dirty-paths)]
-      (get-in errors (->path path))))
+      (get errors (->path path))))
   (validate [this]
     (validate this default-only-dirty-paths))
   (validate [this only-dirty-paths]

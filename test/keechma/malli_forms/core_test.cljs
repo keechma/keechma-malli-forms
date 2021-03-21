@@ -153,7 +153,9 @@
                      (c/validate-in [:password])))
     (is (not (c/valid? @state*)))
     (is (= {[:password-confirmation] ["must match password"]}
-          (-> @state* (c/get-errors false) c/format-errors)))))
+          (-> @state* (c/get-errors false) c/format-errors)))
+    (is (= ["must match password"]
+          (-> @state* (c/get-in-errors :password-confirmation) c/format-error-messages)))))
 
 (comment
   (defn measure-performance []
