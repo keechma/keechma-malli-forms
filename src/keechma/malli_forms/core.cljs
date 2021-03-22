@@ -78,17 +78,13 @@
     (assoc-in this [:state :data] data))
   (assoc-in-data [this path data]
     (let [path' (->path path)]
-      (-> this
-        (assoc-in (into [:state :data] path') data)
-        (update-in [:state :cached-dirty-paths] conj path'))))
+      (assoc-in this (into [:state :data] path') data)))
   (-update-in-data [this path f args]
-    (let [path' (->path path)
-          this' (apply update-in this (into [:state :data] path') f args)]
-      (update-in this' [:state :cached-dirty-paths] conj path')))
+    (let [path' (->path path)]
+      (apply update-in this (into [:state :data] path') f args)))
   (dissoc-in-data [this path]
-    (let [path' (->path path)
-          this' (dissoc-in this (into [:state :data] path'))]
-      (update-in this' [:state :cached-dirty-paths] conj path')))
+    (let [path' (->path path)]
+      (dissoc-in this (into [:state :data] path'))))
   (get-initial-data [_]
     (:initial-data state))
   (get-data [_]
