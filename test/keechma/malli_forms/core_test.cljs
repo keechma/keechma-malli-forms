@@ -155,7 +155,19 @@
     (is (= {[:password-confirmation] ["must match password"]}
           (-> @state* (c/get-errors false) c/format-errors)))
     (is (= ["must match password"]
-          (-> @state* (c/get-in-errors :password-confirmation) c/format-error-messages)))))
+          (-> @state* (c/get-in-errors :password-confirmation) c/format-error-messages)))
+    (swap! state* #(-> %
+                     (c/assoc-in-data [:password] "1234567890")
+                     (c/validate-in [:password])))
+    (is (c/valid? @state*))
+    (swap! state* #(-> %
+                     (c/assoc-in-data [:password] "12345678")
+                     (c/validate-in [:password])))
+    (is (not (c/valid? @state*)))
+    (swap! state* #(-> %
+                     (c/assoc-in-data [:password] "1234567890")
+                     (c/validate-optimistically-in [:password])))
+    (is (c/valid? @state*))))
 
 (comment
   (defn measure-performance []
