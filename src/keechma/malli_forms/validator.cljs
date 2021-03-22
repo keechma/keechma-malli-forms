@@ -147,14 +147,16 @@
         transformer                (mt/transformer
                                      mt/string-transformer
                                      (normalization-transformer {:registry registry}))
-        coercer-transformer        (mt/transformer mt/string-transformer)
+        coercer-decoder            (->> mt/string-transformer
+                                     mt/transformer
+                                     (m/decoder schema {:registry registry}))
         decoder                    (m/decoder schema {:registry registry} transformer)
         subschemas-by-path         (get-subschemas-by-path registry schema)
         path-validator'            (partial path-validator subschemas-by-path)
         optimistic-path-validator' (partial optimistic-path-validator subschemas-by-path)]
     (reify IValidator
       (coerce [_ data]
-        (coercer-transformer data))
+        (coercer-decoder data))
       (errors [_ data]
         (let [normalized-data (decoder data)]
           (when-not (validator normalized-data)

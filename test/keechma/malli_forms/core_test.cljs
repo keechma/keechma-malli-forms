@@ -167,7 +167,11 @@
     (swap! state* #(-> %
                      (c/assoc-in-data [:password] "1234567890")
                      (c/validate-optimistically-in [:password])))
-    (is (c/valid? @state*))))
+    (is (c/valid? @state*))
+    (is (= {:email "example@example.com"
+            :password "1234567890",
+            :password-confirmation "1234567890"}
+          (c/get-coerced-data @state*)))))
 
 (comment
   (defn measure-performance []
