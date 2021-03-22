@@ -24,11 +24,11 @@
              (reduce
                (fn [acc error]
                  (let [error-path (me/error-path error options)]
-                   (update-in acc [error-path schema] set-conj (f (me/with-error-message error options)))))
+                   (update-in acc [error-path (-> error :schema type)] set-conj (f (me/with-error-message error options)))))
                nil errors)
              (reduce
                (fn [acc error]
-                 (update-in acc [:errors schema] set-conj (f (me/with-error-message error options))))
+                 (update-in acc [:errors (-> error :schema type)] set-conj (f (me/with-error-message error options))))
                nil errors))]
        explained))))
 
@@ -74,13 +74,13 @@
                            (fn [acc' error]
                              (let [error-path (into current-path (me/error-path error {}))
                                    message    (:message (me/with-error-message error {}))]
-                               (update-in acc' [error-path schema] set-conj message)))
+                               (update-in acc' [error-path (type schema)] set-conj message)))
                            acc
                            schema-errors)
                          (let [properties      (m/properties schema)
                                error-path      (:error/path properties)
                                full-error-path (if error-path (into current-path error-path) current-path)]
-                           (update-in acc [full-error-path schema] #(or % nil))))))
+                           (update-in acc [full-error-path (type schema)] #(or % nil))))))
                    errors
                    schemas)]
      (if (seq path)
@@ -112,7 +112,7 @@
                            (let [properties      (m/properties schema)
                                  error-path      (:error/path properties)
                                  full-error-path (if error-path (into current-path error-path) current-path)]
-                             (update-in acc [full-error-path schema] #(or % nil)))
+                             (update-in acc [full-error-path (type schema)] #(or % nil)))
                            acc)))
                      errors
                      schemas)]
@@ -166,4 +166,3 @@
             errors)))
       (cleared-parent-errors-for-path [_ data path]
         (optimistic-path-validator' path (decoder data))))))
-

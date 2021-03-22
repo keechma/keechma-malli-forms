@@ -162,7 +162,7 @@
     (is (c/valid? @state*))
     (swap! state* #(-> %
                      (c/assoc-in-data [:password] "12345678")
-                     (c/validate-in [:password])))
+                     c/validate))
     (is (not (c/valid? @state*)))
     (swap! state* #(-> %
                      (c/assoc-in-data [:password] "1234567890")
