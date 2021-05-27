@@ -42,12 +42,12 @@
 (defn- get-dirty-errors [{:keys [dirty-paths cached-dirty-paths errors]}]
   (let [all-dirty-paths (set/union dirty-paths cached-dirty-paths)]
     (reduce-kv
-      (fn [acc path error]
-        (if (contains? all-dirty-paths path)
-          (assoc acc path error)
-          acc))
-      nil
-      errors)))
+     (fn [acc path error]
+       (if (contains? all-dirty-paths path)
+         (assoc acc path error)
+         acc))
+     nil
+     errors)))
 
 (defn- assoc-dirty-paths [{:keys [initial-data data] :as state}]
   (assoc state :dirty-paths (calculate-dirty-paths initial-data data)))
@@ -57,15 +57,15 @@
 
 (defn format-error-messages [error-messages]
   (->> error-messages
-    vals
-    (apply set/union)
-    sort
-    vec))
+       vals
+       (apply set/union)
+       sort
+       vec))
 
 (defn format-errors [errors]
   (let [formatted (->> errors
-                    (map (fn [[k v]] [k (format-error-messages v)]))
-                    (into {}))]
+                       (map (fn [[k v]] [k (format-error-messages v)]))
+                       (into {}))]
     (when (seq formatted)
       formatted)))
 
@@ -73,8 +73,8 @@
   IForm
   (assoc-initial-data [this initial-data]
     (update this :state #(-> %
-                           (assoc :initial-data initial-data)
-                           assoc-dirty-paths)))
+                             (assoc :initial-data initial-data)
+                             assoc-dirty-paths)))
   (assoc-data [this data]
     (assoc-in this [:state :data] data))
   (assoc-in-data [this path data]
@@ -113,41 +113,41 @@
       (if only-dirty-paths
         (update this-with-errors :state assoc-dirty-paths)
         (-> this-with-errors
-          (update :state assoc-dirty-paths)
-          (update :state assoc-cached-dirty-paths)))))
+            (update :state assoc-dirty-paths)
+            (update :state assoc-cached-dirty-paths)))))
   (validate-in [this path]
     (let [path' (->path path)
           path-and-parent-errors (v/errors-for-path validator (:data state) path')
           errors (reduce-kv
-                   (fn [acc k v]
-                     (let [new-errors (->> (merge (get acc k) v)
-                                        (remove (fn [[_ v]] (nil? v)))
-                                        (into {}))]
-                       (if (seq new-errors)
-                         (assoc acc k new-errors)
-                         (dissoc acc k))))
-                   (-> state :errors (dissoc path'))
-                   path-and-parent-errors)
+                  (fn [acc k v]
+                    (let [new-errors (->> (merge (get acc k) v)
+                                          (remove (fn [[_ v]] (nil? v)))
+                                          (into {}))]
+                      (if (seq new-errors)
+                        (assoc acc k new-errors)
+                        (dissoc acc k))))
+                  (-> state :errors (dissoc path'))
+                  path-and-parent-errors)
 
           path-data (get-in this (into [:state :data] path'))
           path-initial-data (get-in this (into [:state :initial-data] path'))
           dirty-paths (calculate-dirty-paths-from-path path' path-initial-data path-data)]
       (-> this
-        (assoc-in [:state :errors] errors)
-        (update-in [:state :dirty-paths] set/union dirty-paths))))
+          (assoc-in [:state :errors] errors)
+          (update-in [:state :dirty-paths] set/union dirty-paths))))
   (validate-optimistically-in [this path]
     (let [path' (->path path)
           cleared-parent-errors (v/cleared-parent-errors-for-path validator (:data state) path')
           errors (reduce-kv
-                   (fn [acc k v]
-                     (let [new-errors (->> (merge (get acc k) v)
-                                        (remove (fn [[_ v]] (nil? v)))
-                                        (into {}))]
-                       (if (seq new-errors)
-                         (assoc acc k new-errors)
-                         (dissoc acc k))))
-                   (-> state :errors (dissoc path'))
-                   cleared-parent-errors)]
+                  (fn [acc k v]
+                    (let [new-errors (->> (merge (get acc k) v)
+                                          (remove (fn [[_ v]] (nil? v)))
+                                          (into {}))]
+                      (if (seq new-errors)
+                        (assoc acc k new-errors)
+                        (dissoc acc k))))
+                  (-> state :errors (dissoc path'))
+                  cleared-parent-errors)]
       (assoc-in this [:state :errors] errors)))
   (valid? [this]
     (valid? this default-only-dirty-paths))
@@ -167,5 +167,5 @@
 (defn make-form [registry schema initial-data]
   (let [validator (v/make-validator registry schema)]
     (->Form
-      validator
-      (make-initial-state initial-data))))
+     validator
+     (make-initial-state initial-data))))
