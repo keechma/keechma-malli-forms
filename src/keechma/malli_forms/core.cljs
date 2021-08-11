@@ -2,7 +2,7 @@
   (:require [keechma.malli-forms.validator :as v]
             [keechma.malli-forms.dirty :refer [calculate-dirty-paths
                                                calculate-dirty-paths-from-path]]
-            [keechma.malli-forms.util :refer [dissoc-in]]
+            [keechma.malli-forms.util :refer [dissoc-in path-starts-with?]]
             [clojure.set :as set]))
 
 (def default-only-dirty-paths true)
@@ -22,6 +22,8 @@
   (get-coerced-data [this])
   (get-errors [this] [this only-dirty-paths])
   (get-in-errors [this path] [this path only-dirty-paths])
+  (clean-in [this path] [this path is-deep])
+  (dissoc-in-errors [this path] [this path is-deep])
   (validate [this] [this only-dirty-paths])
   (validate-in [this path])
   (validate-optimistically-in [this path])
@@ -105,6 +107,27 @@
   (get-in-errors [this path only-dirty-paths]
     (let [errors (get-errors this only-dirty-paths)]
       (get errors (->path path))))
+  (dissoc-in-errors [this path]
+    (dissoc-in-errors this path true))
+  (dissoc-in-errors [this path deep]
+    (let [path' (->path path)
+          this' (clean-in this path' deep)]
+      (if deep
+        (update-in this' [:state :errors] #(->> %
+                                                (remove (fn [[k _]] (path-starts-with? k path')))
+                                                (into {})))
+        (dissoc-in this' [:state :errors path']))))
+  (clean-in [this path]
+    (clean-in this path true))
+  (clean-in [this path deep]
+    (let [path' (->path path)
+          dirty-paths (get-in this [:state :dirty-paths])
+          dirty-paths' (if deep
+                         (->> dirty-paths
+                              (remove #(path-starts-with? % path'))
+                              set)
+                         (disj dirty-paths path'))]
+      (assoc-in this [:state :dirty-paths] dirty-paths')))
   (validate [this]
     (validate this default-only-dirty-paths))
   (validate [this only-dirty-paths]

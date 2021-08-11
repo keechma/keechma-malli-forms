@@ -124,6 +124,20 @@
     (is (= {[:comments 3 :body] ["should be at least 1 characters"]}
            (-> @state* c/get-errors c/format-errors)))))
 
+(deftest errors-can-be-explicitly-cleared
+  (let [state* (atom (c/make-form schema-registry ::article {:comments (mapv (constantly {}) (range 0 2))}))]
+    (swap! state* #(-> %
+                       (c/assoc-in-data [:comments 1 :body] "")
+                       (c/validate-in [:comments 1 :body])))
+    (is (= {[:comments 1 :body] ["should be at least 1 characters"]}
+           (-> @state* c/get-errors c/format-errors)))
+    (swap! state* #(-> %
+                       (c/assoc-in-data [:comments] [{:body ""}])
+                       (c/dissoc-in-errors [:comments 1])
+                       (c/validate-in [:comments 0 :body])))
+    (is (= {[:comments 0 :body] ["should be at least 1 characters"]}
+           (-> @state* c/get-errors c/format-errors)))))
+
 (deftest registration
   (let [state* (atom (c/make-form schema-registry ::registration {}))]
     (swap! state* #(-> %

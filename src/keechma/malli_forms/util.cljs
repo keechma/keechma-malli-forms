@@ -18,3 +18,15 @@
    (if-let [[ks' & kss] (seq kss)]
      (recur (dissoc-in m ks) ks' kss)
      (dissoc-in m ks))))
+
+(defn path-starts-with? [path path-to-match]
+  (loop [path path
+         path-to-match path-to-match]
+    (cond
+      (not (seq path-to-match)) true
+      (not (seq path)) false
+      :else (let [[first-path & rest-path] path
+                  [first-path-to-match & rest-path-to-match] path-to-match]
+              (if (= first-path first-path-to-match)
+                (recur rest-path rest-path-to-match)
+                false)))))
